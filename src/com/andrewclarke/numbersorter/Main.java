@@ -1,5 +1,7 @@
 package com.andrewclarke.numbersorter;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -118,6 +120,7 @@ public class Main {
     // insertSort method sorts an input integer array into numerical order via the insert sort method and returns the
     // sorted list as a string
     public static String insertSort(int[] toSort){
+        Instant startTime = Instant.now();
         int length=toSort.length; // length of input array
         /*
         In insertion sort, we take the second element of the array and compare it to the first element. If the second
@@ -170,14 +173,17 @@ public class Main {
             // place the current value into the correct position within the first 'iteration + 1' elements
             toSort[numOfElementsToLeft + 1] = current;
         }
-
-        return Arrays.toString(toSort); // return sorted array as a String
+        Instant endTime = Instant.now();
+        Duration totalTime = Duration.between(startTime, endTime);
+        String timeString = totalTime.toSeconds() + "." + totalTime.toNanos() + " seconds: ";
+        return timeString + Arrays.toString(toSort); // return sorted array as a String
     }
 
 
     // bubbleSort method sorts an input integer array into numerical order via the bubble sort method and returns the
     // sorted list as a string
     private static String bubbleSort(int[] toSort) {
+        Instant startTime = Instant.now();
         int length=toSort.length; //length of input array
         /*
         In the outermost loop, we are going through each interation of bubble sort. After the first outer loop the
@@ -199,7 +205,10 @@ public class Main {
                 }
             }
         }
-        return Arrays.toString(toSort); // return sorted array as a string
+        Instant endTime = Instant.now();
+        Duration totalTime = Duration.between(startTime, endTime);
+        String timeString = totalTime.toSeconds() + "." + totalTime.toNanos() + " seconds: ";
+        return timeString + Arrays.toString(toSort); // return sorted array as a string
     }
 
 }

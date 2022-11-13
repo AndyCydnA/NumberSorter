@@ -50,8 +50,8 @@ public class Main {
         // store user input in a String
         String userNumberInputString = scanner.nextLine();
 
-        // check is random and valid integer are provided as the input by splitting input into string array, with
-        // elements separated by white space and checking the length of input, and content of each component. If it
+        // check if random and valid integer are provided as the input by splitting the input into a string array, with
+        // elements separated by white space, and checking the length of input, and content of each component. If it
         // is valid, generate a new random integer array, using the generateRandomIntegerArray method, print the
         // array to the console, and call the requested sort method(s).
         String[] stringArrayUserInput = userNumberInputString.split("\\s+");
@@ -62,7 +62,8 @@ public class Main {
             callSortMethod(sortType, integersToSort);
         }
 
-        // check if user input is valid using the checkNumberValidity method
+        // check if user input is valid list of whitespace separated positive integers using the checkNumberValidity
+        // method and call the requested sort method if it is
         else if (checkNumberValidity(userNumberInputString)) {
             // convert string input from user into integer array
             int[] integersToSort = stringToIntegerArray(userNumberInputString);
@@ -88,6 +89,7 @@ public class Main {
     }
 
 
+    // callSortMethod method calls the requested sorting method(s) and prints the results to the console
     public static void callSortMethod(int sortType, int[] integersToSort) {
         // call requested method and print output to console
         switch (sortType) {
@@ -104,7 +106,7 @@ public class Main {
         }
     }
 
-    // checkNumberValidity method checks that the String userNumberInputString only contains numbers separated by
+    // checkNumberValidity method checks that the string userNumberInputString only contains numbers separated by
     // white space. Method returns true or false, and prints error message to the console notifying user of what the
     // issue is in the case of an invalid input.
     private static boolean checkNumberValidity(String userNumberInputString) {
@@ -135,7 +137,8 @@ public class Main {
         }
     }
 
-    // stringToIntgerArray method converts an input string containing integers separated by spaces into an integer array
+    // stringToIntegerArray method converts an input string containing integers separated by spaces into an integer
+    // array
     private static int[] stringToIntegerArray(String userIntegerInputString) {
         String[] splitUserIntegerInputString = userIntegerInputString.split("\\s+"); // split by whitespaces
         int numberOfIntegers = splitUserIntegerInputString.length; // total # of elements in array

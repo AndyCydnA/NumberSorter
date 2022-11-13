@@ -1,3 +1,14 @@
+/*
+Bug: if user provides a number greater than maximum integer 2147483647 it overflows the maximum integer amount and
+causes an error. Need to research dealing with exceptions to resolve this.
+
+Limitation: Current number validity checking only allows positive integers to be specified. Need to change the way
+number validity is checked. Researching dealing with exceptions may also help here.
+
+Limitation: Printing to console limits amount of data that is visible, for larger lists information may be lost.
+Could add importing from and exporting to files as a feature - requires further study.
+ */
+
 package com.andrewclarke.numbersorter;
 
 import java.time.Duration;
@@ -42,8 +53,8 @@ public class Main {
     // requestNumbersToSort method requests the integers to be sorted
     private static void requestNumbersToSort(int sortType) {
         // request a list of space separated integers
-        System.out.println("Please enter the list of positive integers you wish to sort, separated by spaces, or " +
-                "enter random followed by the number of random integers you wish to sort. e.g. random 200");
+        System.out.println("Please enter the list of positive integers (<= 2147483647) you wish to sort, separated by" +
+                "spaces, or enter 'random' followed by the number of random integers you wish to sort. e.g. random 200");
 
         // use scanner object to get user input
         Scanner scanner = new Scanner(System.in);

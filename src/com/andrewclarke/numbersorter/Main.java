@@ -3,6 +3,7 @@ package com.andrewclarke.numbersorter;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
@@ -41,34 +42,65 @@ public class Main {
     // requestNumbersToSort method requests the integers to be sorted
     private static void requestNumbersToSort(int sortType) {
         // request a list of space separated integers
-        System.out.println("Please enter the list of integers you wish to sort, separated by spaces");
+        System.out.println("Please enter the list of positive integers you wish to sort, separated by spaces, or " +
+                "enter random followed by the number of random integers you wish to sort. e.g. random 200");
 
         // use scanner object to get user input
         Scanner scanner = new Scanner(System.in);
         // store user input in a String
         String userNumberInputString = scanner.nextLine();
 
-        // check if user input is valid using the
-        if (checkNumberValidity(userNumberInputString)){
+        // check is random and valid integer are provided as the input by splitting input into string array, with
+        // elements separated by white space and checking the length of input, and content of each component. If it
+        // is valid, generate a new random integer array, using the generateRandomIntegerArray method, print the
+        // array to the console, and call the requested sort method(s).
+        String[] stringArrayUserInput = userNumberInputString.split("\\s+");
+        if (stringArrayUserInput.length == 2 && stringArrayUserInput[0].equals("random") &&
+                stringArrayUserInput[1].matches("^[0-9]*$")) {
+            int[] integersToSort = generateRandomIntegerArray(Integer.parseInt(stringArrayUserInput[1]));
+            System.out.println("Initial values:" + Arrays.toString(integersToSort));
+            callSortMethod(sortType, integersToSort);
+        }
+
+        // check if user input is valid using the checkNumberValidity method
+        else if (checkNumberValidity(userNumberInputString)) {
             // convert string input from user into integer array
             int[] integersToSort = stringToIntegerArray(userNumberInputString);
-            // call requested method and print output to console
-            switch (sortType) {
-                case 1: // insert sort
-                    System.out.println("Insert: " + insertSort(integersToSort));
-                    break;
-                case 2: // bubble sort
-                    System.out.println("Bubble: " + bubbleSort(integersToSort));
-                    break;
-                case 3: // insert and bubble sort
-                    System.out.println("Insert: " + insertSort(integersToSort));
-                    System.out.println("Bubble: " + bubbleSort(integersToSort));
-                    break;
-            }
+            callSortMethod(sortType, integersToSort);
         }
+
         // if user input was not valid, request it again
         else {
             requestNumbersToSort(sortType);
+        }
+    }
+
+    // generateRandomIntegerArray method returns a random integer array of length 'length'
+    private static int[] generateRandomIntegerArray(int length) {
+        int[] randomArray = new int[length]; // create empty array of length parseInt
+        Random randomInt = new Random(); // create new random object
+
+        // loop over integer array and set each value equal to a random integer
+        for (int currentInt = 0; currentInt < length; currentInt++) {
+            randomArray[currentInt] = randomInt.nextInt(0, 2147483647);
+        }
+        return randomArray; // return the randomised integer array
+    }
+
+
+    public static void callSortMethod(int sortType, int[] integersToSort) {
+        // call requested method and print output to console
+        switch (sortType) {
+            case 1: // insert sort
+                System.out.println("Insert: " + insertSort(integersToSort));
+                break;
+            case 2: // bubble sort
+                System.out.println("Bubble: " + bubbleSort(integersToSort));
+                break;
+            case 3: // insert and bubble sort
+                System.out.println("Insert: " + insertSort(integersToSort));
+                System.out.println("Bubble: " + bubbleSort(integersToSort));
+                break;
         }
     }
 

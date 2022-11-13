@@ -1,12 +1,18 @@
 /*
-Bug: if user provides a number greater than maximum integer 2147483647 it overflows the maximum integer amount and
-causes an error. Need to research dealing with exceptions to resolve this.
+Limitation: Previously, if a user provided a number greater than maximum integer 2147483647, it would
+overflow the maximum integer amount and causes an error. To resolve this user inputs have been temporarily limited to
+999,999,999. Need to research dealing with exceptions to increase this limit. Could also use long type, but same issue
+would still occur, just at much larger numbers.
 
 Limitation: Current number validity checking only allows positive integers to be specified. Need to change the way
 number validity is checked. Researching dealing with exceptions may also help here.
 
 Limitation: Printing to console limits amount of data that is visible, for larger lists information may be lost.
 Could add importing from and exporting to files as a feature - requires further study.
+
+Limitation: only works with integers currently. Could look at incorporating float/double values.
+
+Limitation: currently no unit tests. Once implementation of unit tests has been studied, they should be implemented.
  */
 
 package com.andrewclarke.numbersorter;
@@ -31,9 +37,9 @@ public class Main {
         System.out.println("1. Insert sort");
         System.out.println("2. Bubble sort");
         System.out.println("3. Both insert and bubble sort");
-        // Use the Scanner class to get input from the user by creating a Scanner object
+
+        // Use the Scanner class to get input from the user by creating a Scanner object and storing input
         Scanner scanner = new Scanner(System.in);
-        // Read the input from the user and store it in a String variable, userInputSortType
         String userInputSortType = scanner.nextLine();
 
         // check that a valid input of 1, 2 or 3 is provided
@@ -52,45 +58,47 @@ public class Main {
 
     // requestNumbersToSort method requests the integers to be sorted
     private static void requestNumbersToSort(int sortType) {
-        // request a list of space separated integers
-        System.out.println("Please enter the list of positive integers (<= 2147483647) you wish to sort, separated by" +
-                "spaces, or enter 'random' followed by the number of random integers you wish to sort. e.g. random 200");
-
-        // use scanner object to get user input
+        // get user input
+        System.out.println("Please enter the list of positive integers (<= 999999999) you wish to sort, separated " +
+                "by" + "spaces, or enter 'random' followed by the number of random integers you wish to sort. e.g. " +
+                "random 200. Max # of integers to sort = 999999999.");
         Scanner scanner = new Scanner(System.in);
-        // store user input in a String
         String userNumberInputString = scanner.nextLine();
 
-        // check if random and valid integer are provided as the input by splitting the input into a string array, with
-        // elements separated by white space, and checking the length of input, and content of each component. If it
-        // is valid, generate a new random integer array, using the generateRandomIntegerArray method, print the
-        // array to the console, and call the requested sort method(s).
+        // check if "random" and a valid integer are provided as the inputs
         String[] stringArrayUserInput = userNumberInputString.split("\\s+");
         if (stringArrayUserInput.length == 2 && stringArrayUserInput[0].equals("random") &&
                 stringArrayUserInput[1].matches("^[0-9]*$")) {
-            int[] integersToSort = generateRandomIntegerArray(Integer.parseInt(stringArrayUserInput[1]));
-            System.out.println("Initial values:" + Arrays.toString(integersToSort));
-            callSortMethod(sortType, integersToSort);
+            // if integer input is >999,999,999, return error to user and request another input
+            if (stringArrayUserInput[1].length() > 9){
+                System.out.println("Error: integer value " + stringArrayUserInput[1] + " exceeds 1000000000.");
+                requestNumbersToSort(sortType);
+            }
+            // otherwise input is valid and the random input array is generated and passed to the sorting method
+            else{
+                int[] integersToSort = generateRandomIntegerArray(Integer.parseInt(stringArrayUserInput[1]));
+                System.out.println("Initial values:" + Arrays.toString(integersToSort));
+                callSortMethod(sortType, integersToSort);
+            }
         }
 
-        // check if user input is valid list of whitespace separated positive integers using the checkNumberValidity
-        // method and call the requested sort method if it is
+        // check if user input is a valid list of whitespace-separated integers
         else if (checkNumberValidity(userNumberInputString)) {
             // convert string input from user into integer array
             int[] integersToSort = stringToIntegerArray(userNumberInputString);
             callSortMethod(sortType, integersToSort);
         }
 
-        // if user input was not valid, request it again
+        // if user input is not valid, request it again
         else {
             requestNumbersToSort(sortType);
         }
     }
 
-    // generateRandomIntegerArray method returns a random integer array of length 'length'
+    // generateRandomIntegerArray method returns a random integer array of length 'length' using util.Random
     private static int[] generateRandomIntegerArray(int length) {
-        int[] randomArray = new int[length]; // create empty array of length parseInt
-        Random randomInt = new Random(); // create new random object
+        int[] randomArray = new int[length];
+        Random randomInt = new Random();
 
         // loop over integer array and set each value equal to a random integer
         for (int currentInt = 0; currentInt < length; currentInt++) {
@@ -118,7 +126,7 @@ public class Main {
     }
 
     // checkNumberValidity method checks that the string userNumberInputString only contains numbers separated by
-    // white space. Method returns true or false, and prints error message to the console notifying user of what the
+    // white space. Method returns true or false, and prints error message to the console notifying user of the
     // issue is in the case of an invalid input.
     private static boolean checkNumberValidity(String userNumberInputString) {
         // remove all spaces from the string
@@ -130,11 +138,20 @@ public class Main {
         // split the string into a string array, separating the elements by any number of whitespaces
         String[] splitArray = userNumberInputString.split("\\s+");
 
-        // if there are at least two elements in the array, and all the elements are numbers return true
-        if (splitArray.length >= 2 && onlyDigits){
+        // check all input numbers are less than 10 digits long i.e. <1,000,000,000
+        boolean tooLong = false;
+        for (String eachElement:splitArray){
+            if (eachElement.length() > 9){
+                tooLong = true;
+                break;
+            }
+        }
+
+        // if there are at least two elements in the array, and all the elements are numbers, method returns true
+        if (splitArray.length >= 2 && onlyDigits && !tooLong){
             return true;
         }
-        // else print to the console what the error is and return false
+        // else the error is printed to the console, and the method returns false
         else {
             String errorString = "Error:";
             if (!onlyDigits) {
@@ -142,6 +159,9 @@ public class Main {
             }
             if (splitArray.length < 2) {
                 errorString += " Fewer than 2 integers detected.";
+            }
+            if (tooLong) {
+                errorString += " Integers exceeding 999999999 detected.";
             }
             System.out.println(errorString);
             return false;
@@ -152,10 +172,11 @@ public class Main {
     // array
     private static int[] stringToIntegerArray(String userIntegerInputString) {
         String[] splitUserIntegerInputString = userIntegerInputString.split("\\s+"); // split by whitespaces
-        int numberOfIntegers = splitUserIntegerInputString.length; // total # of elements in array
-        int[] integerArray = new int[numberOfIntegers]; // setup empty integer array of the correct length
 
-        // loop over array elements and parse integer values from string array and store as integers in integer array
+        int numberOfIntegers = splitUserIntegerInputString.length;
+        int[] integerArray = new int[numberOfIntegers];
+
+        // loop over array elements, parse integer values from string array, and store as integers in integer array
         for (int element = 0; element < numberOfIntegers; element++) {
             integerArray[element] = Integer.parseInt(splitUserIntegerInputString[element]);
         }
@@ -167,42 +188,42 @@ public class Main {
     // sorted list as a string
     public static String insertSort(int[] toSort){
         Instant startTime = Instant.now();
-        int length=toSort.length; // length of input array
+        int length=toSort.length;
         /*
-        In insertion sort, we take the second element of the array and compare it to the first element. If the second
-         element is greater than the first element, it is placed in front of the first element. At this point the
-         first two elements of the array are in numerical order.
+        In insertion sort, the second element of the array is compared to the first element. If the second element is
+        greater than the first element, it is placed in front of the first element. At this point the
+        first two elements of the array are in numerical order.
 
-         The next stage is to get the first three elements of the array in order, then the first four and so on.
+        The next stage is to get the first three elements of the array in order, then the first four, and so on.
 
-         The parameter iteration tracks the current element we are placing into the correct position, within the
-         first 'iteration+1' number of elements.
-            e.g. If iteration = 4, we are currently placing the 5th (due to zero based indexing) element into the
+        The parameter iteration tracks the current element that is being placed into the correct position, within the
+        first 'iteration+1' number of elements.
+            e.g. If iteration = 4, the 5th (due to zero based indexing) element is currently being placed into the
             correct position within the first 5 elements. Once this iteration of the for loop is complete, the first
-            5 elements of the array will be in the correct order, and we move onto placing the 6th element into the
-            correct place within the first 6 elements.
+            5 elements of the array will be in the correct order. Then the code moves onto placing the 6th element into
+            the  correct place within the first 6 elements.
 
-         The parameter numOfElementsToLeft initially stores the total number of elements to the left of the current
-         element being sorted.
+        The parameter numOfElementsToLeft stores the total number of elements to the left of the current element
+        being sorted, that have not been compared to the current element.
 
-         The while loop states that as long as there are elements to the left of the current element, and we haven't
-         compared it to all the elements to the left yet,
-         AND
-         The value of the current element is less than the next value to the left,
-         THEN
-         we shift the value which we just compared the current value to, to the right by one element
-         and we update the number of elements to the left which we have yet to compare the current value to
+        The while loop states that as long as there are elements to the left of the current element, that have not
+        been compared to the current element,
+        AND
+        The value of the current element is less than the next value to the left,
+        THEN
+        the value which was just compared the current value being sorted is shifted to the right by one element.
+        Additionally, the number of elements to the left of the current value, which have not yet been compared to
+        the current value, is updated.
 
-         If there are no more elements to the left, or the current value being sorted is greater than the next
-         element to the left, then the while loop no longer runs. In this case, we have shifted all the larger
-         numbers to the right by one, and we insert the current value being sorted at the correct position within the
-         first 'iteration + 1' values.
+        If there are no more elements to the left, or the current value being sorted is greater than the next
+        element to the left, then the while loop no longer runs. In this case, all larger numbers have been shifted
+        to the right by one, and the current value being sorted is inserted at the correct position within the
+        first 'iteration + 1' values.
 
-         Once we have sorted from the second element (iteration = 1) up to the final element
-         i.e. until iteration == length
-         all elements will be in numerical order.
-
+        Once the second element (iteration == 1) through to the final element have been sorted (iteration == length),
+        then all elements will be in numerical order.
          */
+
         for (int iteration = 1; iteration < length; iteration++){
             int current = toSort[iteration]; // value of current element being sorted
             int numOfElementsToLeft = iteration - 1; // current # of elements to left of current element being sorted
@@ -213,15 +234,18 @@ public class Main {
                 // shift element to the right by 1
                 toSort[numOfElementsToLeft + 1] = toSort[numOfElementsToLeft];
 
-                //number of elements to the left, which we are yet to compare the current value to
+                // update number of elements to the left, which are yet to be compared to the current value
                 numOfElementsToLeft--;
             }
             // place the current value into the correct position within the first 'iteration + 1' elements
             toSort[numOfElementsToLeft + 1] = current;
         }
+
+        //time tracking
         Instant endTime = Instant.now();
         Duration totalTime = Duration.between(startTime, endTime);
         String timeString = totalTime.toSeconds() + "." + totalTime.toNanos() + " seconds: ";
+
         return timeString + Arrays.toString(toSort); // return sorted array as a String
     }
 
@@ -230,17 +254,19 @@ public class Main {
     // sorted list as a string
     private static String bubbleSort(int[] toSort) {
         Instant startTime = Instant.now();
-        int length=toSort.length; //length of input array
+        int length=toSort.length;
         /*
-        In the outermost loop, we are going through each interation of bubble sort. After the first outer loop the
-        highest number is found and placed at the end of the array.
-        Each loop that progresses will place the next highest number in the correct location at the end of the array.
+        The outermost loop goes through each iteration of bubble sort. After the first outer loop is complete, the
+        highest number will have been found and placed at the end of the array. Each subsequent loop will place the
+        next highest number in the correct location at the end of the array.
 
-        In the inner loop, we are looping over the individual elements of the array and comparing them one-by-one.
-        As the highest numbers get placed into the correct position with each outer loop, we can make the inner loop
-        shorter by 1, for each outer loop that we go through, hence the "i < length - loop - 1". i.e. We do not need to
-        compare these numbers at the end of the loop as they are in the correct place.
+        The inner loop loops over the individual elements of the array and compares them one-by-one. If the number to
+        current number is larger than the next number they are swapped, and the loop moves onto the next element,
+        gradually moving the next highest number into the correct position.
 
+        As the next highest number get placed into the correct position with each outer loop, it is no longer
+        necessary to make comparisons to these numbers. Therefore, the inner loop becomes shorter by 1 for each outer
+        loop that is completed, hence the "i < length - loop - 1".
          */
         for (int loop = 0; loop < length - 1; loop++){
             for (int i = 0; i < length - loop - 1; i++) {
@@ -251,9 +277,12 @@ public class Main {
                 }
             }
         }
+
+        //time tracking
         Instant endTime = Instant.now();
         Duration totalTime = Duration.between(startTime, endTime);
         String timeString = totalTime.toSeconds() + "." + totalTime.toNanos() + " seconds: ";
+
         return timeString + Arrays.toString(toSort); // return sorted array as a string
     }
 
